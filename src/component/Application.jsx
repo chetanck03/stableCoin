@@ -14,7 +14,7 @@ const Application = () => {
   const [epochComplete, setEpochComplete] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [bondType, setBondType] = useState("1"); 
+  const [bondType, setBondType] = useState("1");
 
   // Fetch token balances
   const fetchBalances = async () => {
@@ -107,50 +107,28 @@ const Application = () => {
       setError("Failed to burn DPG.");
     }
   };
-    // Handle issue bond functionality
-    const handleIssueBond = async () => {
-      
-      try {
-        const tx = await contractInstance.issueBond(bondType); // Assuming issueBond is a function in your contract
-        await tx.wait();
-        alert("Bond issued successfully!");
-        fetchBalances();
-      } catch (err) {
-        console.error("Error issuing bond:", err);
-        setError("Failed to issue bond.");
-      }
-    };
 
-  // Handle minting with ETH
-  const handleMintDPGWithETH = async () => {
-    if (!mintAmount || parseFloat(mintAmount) <= 0) {
-      alert("Please enter a valid mint amount.");
-      return;
-    }
+  // Handle issue bond functionality
+  const handleIssueBond = async () => {
     try {
-      const amountInWei = ethers.parseEther(mintAmount);
-      console.log("Mint Amount in Wei:", amountInWei.toString());
-
-      const tx = await contractInstance.mintDPGWithETH({ value: amountInWei });
+      const tx = await contractInstance.issueBond(bondType);
       await tx.wait();
-      alert("Mint with ETH successful!");
+      alert("Bond issued successfully!");
       fetchBalances();
     } catch (err) {
-      console.error("Error minting with ETH:", err);
-      setError("Failed to mint with ETH.");
+      console.error("Error issuing bond:", err);
+      setError("Failed to issue bond.");
     }
   };
+
 
   // Fetch market caps
   const fetchMarketCaps = async () => {
     try {
-      // Fetch market caps for each token separately
-      const dpgMarketCap = await contractInstance.getDPGMarketCap();  // Assuming there's a function for DPG
-      const daiMarketCap = await contractInstance.getDAIMarketCap();  // Assuming there's a function for DAI
-      const dpbMarketCap = await contractInstance.getDPBMarketCap();  // Assuming the function name is correct
-  
-  
-      // Format the market caps correctly using ethers.formatUnits
+      const dpgMarketCap = await contractInstance.getDPGMarketCap();
+      const daiMarketCap = await contractInstance.getDAIMarketCap();
+      const dpbMarketCap = await contractInstance.getDPBMarketCap();
+
       setMarketCaps({
         dpg: ethers.formatUnits(dpgMarketCap, 18),
         dai: ethers.formatUnits(daiMarketCap, 18),
@@ -161,22 +139,20 @@ const Application = () => {
       setError("Failed to fetch market caps.");
     }
   };
-  
 
   // Initial fetch and auto-refresh
   useEffect(() => {
     if (contractInstance) {
       setLoading(true);
-      Promise.all([fetchBalances(), fetchDaiPrice(), checkEpochComplete(),fetchMarketCaps()])
+      Promise.all([fetchBalances(), fetchDaiPrice(), checkEpochComplete(), fetchMarketCaps()])
         .catch(console.error)
         .finally(() => setLoading(false));
 
-      // Auto-refresh every 10 seconds
       const intervalId = setInterval(() => {
         fetchBalances();
         fetchDaiPrice();
         checkEpochComplete();
-        fetchMarketCaps()
+        fetchMarketCaps();
       }, 10000);
 
       return () => clearInterval(intervalId);
@@ -184,63 +160,103 @@ const Application = () => {
   }, [contractInstance]);
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">Market Caps</h2>
-        <ul className="list-disc list-inside">
-          <li>DPG Market Cap: ${marketCaps.dpg}</li>
-          <li>DAI Market Cap: ${marketCaps.dai}</li>
-          <li>DPB Market Cap: ${marketCaps.dpb}</li>
-        </ul>
-      </div>
-      <h1 className="text-2xl font-bold mb-4">Pegbreaker Dashboard</h1>
+    <div className="p-6 bg-gray-900 text-white min-h-screen">
+      <div className="mb-6 flex flex-col space-y-4">
+        <h1 className="text-3xl font-extrabold">Pegbreaker Dashboard</h1>
 
-      {loading && <p>Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+        {loading && <p>Loading...</p>}
+        {error && <p className="text-red-500">{error}</p>}
 
-      {/* Token Balances */}
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">Token Balances in Account: </h2>
-        <ul className="list-disc list-inside">
-          <li>DPG Token: {balances.dpg}</li>
-          <li>DAI Token: {balances.dai}</li>
-          <li>DPB Token: {balances.dpb}</li>
-        </ul>
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-semibold mb-4">Market Caps</h2>
+            <ul>
+              <li>DPG Market Cap: ${marketCaps.dpg}</li>
+              <li>DAI Market Cap: ${marketCaps.dai}</li>
+              <li>DPB Market Cap: ${marketCaps.dpb}</li>
+            </ul>
+          </div>
 
-      {/* DAI Price */}
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">DAI Price</h2>
-        <p>{daiPrice ? `$${daiPrice}` : "Loading..."}</p>
-      </div>
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-semibold mb-4">Token Balances</h2>
+            <ul>
+              <li>DPG Token: {balances.dpg}</li>
+              <li>DAI Token: {balances.dai}</li>
+              <li>DPB Token: {balances.dpb}</li>
+            </ul>
+          </div>
+        </div>
 
-      {/* Stake Tokens */}
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">Stake Tokens DPG</h2>
-        <input
-          type="text"
-          value={stakeAmount}
-          onChange={(e) => setStakeAmount(e.target.value)}
-          placeholder="Enter amount to stake"
-          className="border p-2 rounded w-full mb-2"
-        />
-        <button
-          onClick={handleStake}
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-        >
-          Stake
-        </button>
-      </div>
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-semibold mb-4">DAI Price</h2>
+          <p>{daiPrice ? `$${daiPrice}` : "Loading..."}</p>
+        </div>
 
-       {/* Bond Amount Input */}
-       <div className="mb-6">
-        <h2 className="text-xl font-semibold">Issue Bond with DPG tokens</h2>
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-semibold mb-4">Stake DPG Tokens</h2>
+          <input
+            type="text"
+            value={stakeAmount}
+            onChange={(e) => setStakeAmount(e.target.value)}
+            placeholder="Enter amount to stake"
+            className="border p-2 rounded w-full mb-4 text-white"
+          />
+          <button
+            onClick={handleStake}
+            className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 w-full"
+          >
+            Stake
+          </button>
+        </div>
+
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-semibold mb-4">Mint DPG with DAI</h2>
+          <input
+            type="text"
+            value={mintAmount}
+            onChange={(e) => setMintAmount(e.target.value)}
+            placeholder="Enter amount to mint"
+            className="border p-2 rounded w-full mb-4 text-white"
+          />
+          <button
+            onClick={handleMintDPGWithDAI}
+            className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 w-full"
+          >
+            Mint with DAI
+          </button>
+        </div>
+
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-semibold mb-4">Burn DPG Tokens</h2>
+          <input
+            type="text"
+            value={burnAmount}
+            onChange={(e) => setBurnAmount(e.target.value)}
+            placeholder="Enter amount to burn"
+            className="border p-2 rounded w-full mb-4 text-white"
+          />
+          <button
+            onClick={handleBurnDPG}
+            className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 w-full"
+          >
+            Burn DPG
+          </button>
+        </div>
+
+        {/* Epoch Status */}
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-semibold mb-4">Epoch Status</h2>
+          <p>{epochComplete ? "Epoch is complete." : "Epoch is not completed."}</p>
+        </div>
+          {/* Bond Amount Input */}
+       <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-semibold mb-4">Issue Bond with DPG tokens</h2>
         
         {/* Bond Type Selection */}
         <select
           value={bondType}
           onChange={(e) => setBondType(e.target.value)}
-          className="border p-2 rounded w-full mb-2"
+          className="border p-2 rounded text-white bg-gray-800 w-full mb-2"
         >
           <option value="1">1-Year Bond (25% return)</option>
           <option value="2">2-Year Bond (60% return)</option>
@@ -248,71 +264,14 @@ const Application = () => {
 
         <button
           onClick={handleIssueBond}
-          className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600"
+          className="bg-purple-500 text-white  w-full py-2 px-4 rounded hover:bg-purple-600"
         >
           Issue Bond
         </button>
       </div>
-      {/* Mint with DAI */}
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">DAI Tokens converts DPG Tokens</h2>
-        <input
-          type="text"
-          value={mintAmount}
-          onChange={(e) => setMintAmount(e.target.value)}
-          placeholder="Enter amount to mint"
-          className="border p-2 rounded w-full mb-2"
-        />
-        <button
-          onClick={handleMintDPGWithDAI}
-          className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600"
-        >
-          Mint with DAI
-        </button>
-      </div>
-
-      {/* Burn DPG */}
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">DPG Tokens converts DAI Tokens</h2>
-        <input
-          type="text"
-          value={burnAmount}
-          onChange={(e) => setBurnAmount(e.target.value)}
-          placeholder="Enter amount to burn"
-          className="border p-2 rounded w-full mb-2"
-        />
-        <button
-          onClick={handleBurnDPG}
-          className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
-        >
-          Burn DPG
-        </button>
-      </div>
-
-      {/* Mint with ETH */}
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">Mint DPG with ETH</h2>
-        <input
-          type="text"
-          value={mintAmount}
-          onChange={(e) => setMintAmount(e.target.value)}
-          placeholder="Enter amount to mint"
-          className="border p-2 rounded w-full mb-2"
-        />
-        <button
-          onClick={handleMintDPGWithETH}
-          className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
-        >
-          Mint with ETH
-        </button>
-      </div>
-
-      {/* Epoch Status */}
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">Epoch Status</h2>
-        <p>{epochComplete ? "Epoch is complete." : "Epoch is not completed."}</p>
       </div>
     </div>
+    
   );
 };
 

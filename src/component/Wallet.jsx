@@ -46,47 +46,54 @@ const WalletComponent = () => {
   }, [selectedAccount, chainId]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-sm p-4 bg-white rounded-lg shadow-md">
-        {selectedAccount ? (
-          <>
-            <h2 className="text-xl font-bold text-center text-gray-800 mb-4">Wallet Connected</h2>
-            <div className="space-y-3">
-              <div className="border-b pb-2">
-                <p className="text-sm font-medium text-gray-600">Account Address:</p>
-                <p className="text-sm text-gray-800 break-all">{selectedAccount}</p>
+    <div className="min-h-screen bg-gray-900 flex flex-col">
+     
+
+      {/* Main Wallet Component */}
+      <div className="flex flex-col items-center justify-center flex-1 p-6">
+        <div className="w-full max-w-md p-6 bg-gray-800 rounded-xl shadow-2xl border border-gray-700">
+          {selectedAccount ? (
+            <>
+              <h2 className="text-3xl font-semibold text-center text-white mb-4">Wallet Connected</h2>
+              <div className="space-y-4">
+                <div className="border-b pb-3">
+                  <p className="text-sm font-medium text-gray-400">Account Address:</p>
+                  <p className="text-sm text-white break-all">{selectedAccount}</p>
+                </div>
+
+                <div className="border-b pb-3">
+                  <p className="text-sm font-medium text-gray-400">Balance:</p>
+                  <p className="text-sm text-white">{balance ? `${balance} ETH` : "Loading..."}</p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-gray-400">Network:</p>
+                  <p className="text-sm text-white">{chainName}</p>
+                </div>
               </div>
 
-              <div className="border-b pb-2">
-                <p className="text-sm font-medium text-gray-600">Balance:</p>
-                <p className="text-sm text-gray-800">{balance ? `${balance} ETH` : "Loading..."}</p>
-              </div>
-
-              <div>
-                <p className="text-sm font-medium text-gray-600">Network:</p>
-                <p className="text-sm text-gray-800">{chainName}</p>
-              </div>
+              <button
+                onClick={disconnectWallet}
+                className="mt-6 w-full py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200"
+              >
+                Disconnect Wallet
+              </button>
+            </>
+          ) : (
+            <div className="text-center">
+              <p className="text-sm text-gray-400 mb-6">Connect your wallet to get started</p>
+              <button
+                onClick={handleWallet}
+                className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200"
+              >
+                Connect Wallet
+              </button>
             </div>
-
-            <button
-              onClick={disconnectWallet}
-              className="mt-4 w-full py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-200"
-            >
-              Disconnect Wallet
-            </button>
-          </>
-        ) : (
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-4">Connect your wallet to get started</p>
-            <button
-              onClick={handleWallet}
-              className="w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200"
-            >
-              Connect Wallet
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+    
     </div>
   );
 };

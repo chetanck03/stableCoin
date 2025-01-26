@@ -23,7 +23,7 @@ export const getWeb3State = async () => {
     const signer = await provider.getSigner();
 
     // Set up the contract instance with ABI and signer
-    const contractAddress = "0xCa2482384d23079Cd7ecBe34d91f21eF57734843";
+    const contractAddress = "0xf0641d4B9a733908EA8Fe1e4d262e2dFf65FA194";
     const contractInstance = new ethers.Contract(contractAddress, abi, signer);
     console.log("contractAddress:" ,contractAddress,"\n", "abi:", abi,"signer:","\n", signer,"contractInstance: ","\n",contractInstance,"\n", "selectedAccount: ","\n",selectedAccount,"\n","chainId:", chainId )
     return { contractInstance, selectedAccount, chainId };
