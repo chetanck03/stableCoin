@@ -52,17 +52,13 @@ To test the contracts, use Remix IDE on any testnet (such as Holesky Testnet):
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/chetanck03/stableCoin.git
    ```
-2. Navigate to the project directory:
-   ```bash
-   cd <project-directory>
-   ```
-3. Install dependencies:
+2. Install dependencies:
    ```bash
    npm i
    ```
-4. Start the development server:
+3. Start the development server:
    ```bash
    npm run dev
    ```
